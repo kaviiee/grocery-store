@@ -1,0 +1,14 @@
+->TO CREATE ENV
+pip install virtualenv
+virtualenv env
+
+->TO activate ENV 
+.\\env\Scripts\activate.bat
+
+pip install flask flask-sqlalchemy
+python firstflask
+->FOR DB CREATION
+python (starts python shell)
+from firstflask(python filename) import app,db
+app.app_context().push()
+db.create_all()
