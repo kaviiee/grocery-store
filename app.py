@@ -5,37 +5,54 @@ from datetime import datetime
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
 db=SQLAlchemy(app)
-db.init_app(app)
-app.app_context().push()
-
-class ToDo(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    completed = db.Column(db.Integer, default=0)
-    date_created = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    def __repr__(self):
-        return '<Task %r>' % self.id
+#db.init_app(app)
+#app.app_context().push()
     
 class Users(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
+    def __repr__(self):
+        return '<User %r>' % self.id
     
+class Categories(db.Model):
+    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)
+    img_url = db.Column(db.String, nullable=True)
+
+class Products(db.Model):
+    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
+    name = db.Column(db.String, unique=True, nullable=False)
+    manufacture_date = db.Column(db.DateTime, nullable=False)
+    expiry_date = db.Column(db.DateTime, nullable=False)
+    rate_per_unit=db.Column(db.Float, nullable=False)
+    available_quantity=db.Column(db.Integer, nullable=False)
+    category_id=db.Column(db.Integer, db.ForeignKey("Categories.id"), nullable=False)
+    categories=db.relationship("Categories", backref=db.backref('products', lazy=True))
+
+class Carts(db.Model):
+    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False, unique=True)
+    creation_date = db.Column(db.DateTime, nullable=False)
+    status = db.Column(db.String, nullable=False)
+    users = db.relationship("Users", backref=db.backref("carts", lazy=True))
+
+class Cart_items(db.Model):
+    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
+    cart_id = db.Column(db.Integer, db.ForeignKey("Carts.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("Products.id"), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
+    carts = db.relationship("Carts", backref=db.backref("cart_items", lazy=True))
+    products = db.relationship("Products", backref=db.backref("cart_items", lazy=True))
+
 class Transactions(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey=("Users.id"), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), unique=True, nullable=False)
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     amount = db.Column(db.Boolean, nullable=False)
     users=db.relationship("Users", backref=db.backref('transactions', lazy=True))
 
-class Products(db.Model):
-    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey=("Users.id"), unique=True, nullable=False)
-    transaction_date = db.Column(db.DateTime, nullable=False)
-    amount = db.Column(db.Boolean, nullable=False)
-    users=db.relationship("Users", backref=db.backref('transactions', lazy=True))
 
 @app.route("/categories")
 def categories():
