@@ -1,12 +1,14 @@
 from flask import Flask, render_template, url_for, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exists
+from flask_migrate import Migrate
 from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key="KEY"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
 db=SQLAlchemy(app)
+migrate=Migrate(app,db)
 #db.init_app(app)
 #app.app_context().push()
     
@@ -14,7 +16,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    is_admin = db.Column(db.String, nullable=False)
+    is_admin = db.Column(db.String, default="user", nullable=False)
     def __repr__(self):
         return '<User %r>' % self.id
     
@@ -81,7 +83,6 @@ def login():
 def authenticate_user(username, password):
     # Get the user record from the database based on the username
     user = Users.query.filter_by(username=username).first()
-    print(user)
     if user:
         # Check if the provided password matches the stored password
         if user.password == password:
@@ -104,13 +105,13 @@ def signup():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-
+        is_admin = request.form.get("role")
         # Check if the username is already taken
         if is_username_taken(username):
             flash("Username is already taken. Please choose a different username.", "error")
         else:
             # Create a new user in the database
-            create_user(username, password)
+            create_user(username, password, is_admin)
             flash("Account created successfully! Please login.", "success")
             return redirect(url_for("login"))
 
@@ -122,9 +123,9 @@ def is_username_taken(username):
     return db.session.query(exists().where(Users.username == username)).scalar()
 
 # Helper function to create a new user in the database
-def create_user(username, password):
+def create_user(username, password, is_admin):
     # Create a new user object using the User model
-    new_user = Users(username=username, password=password)
+    new_user = Users(username=username, password=password, is_admin=is_admin)
 
     # Add the new user to the database session
     db.session.add(new_user)
