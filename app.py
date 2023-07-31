@@ -1,8 +1,10 @@
-from flask import Flask, render_template, url_for, request, redirect
+from flask import Flask, render_template, url_for, request, redirect, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exists
 from datetime import datetime
 
 app = Flask(__name__)
+app.secret_key="KEY"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
 db=SQLAlchemy(app)
 #db.init_app(app)
@@ -12,7 +14,7 @@ class Users(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    is_admin = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.String, nullable=False)
     def __repr__(self):
         return '<User %r>' % self.id
     
@@ -28,31 +30,113 @@ class Products(db.Model):
     expiry_date = db.Column(db.DateTime, nullable=False)
     rate_per_unit=db.Column(db.Float, nullable=False)
     available_quantity=db.Column(db.Integer, nullable=False)
-    category_id=db.Column(db.Integer, db.ForeignKey("Categories.id"), nullable=False)
-    categories=db.relationship("Categories", backref=db.backref('products', lazy=True))
+    category_id=db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
+    categories=db.relationship("Categories", backref='products', primaryjoin='Products.category_id == Categories.id')
 
 class Carts(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True)
     creation_date = db.Column(db.DateTime, nullable=False)
     status = db.Column(db.String, nullable=False)
-    users = db.relationship("Users", backref=db.backref("carts", lazy=True))
+    users = db.relationship("Users", backref=db.backref("carts", lazy=True), primaryjoin='Carts.user_id == Users.id')
 
 class Cart_items(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    cart_id = db.Column(db.Integer, db.ForeignKey("Carts.id"), nullable=False)
-    product_id = db.Column(db.Integer, db.ForeignKey("Products.id"), nullable=False)
+    cart_id = db.Column(db.Integer, db.ForeignKey("carts.id"), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
-    carts = db.relationship("Carts", backref=db.backref("cart_items", lazy=True))
-    products = db.relationship("Products", backref=db.backref("cart_items", lazy=True))
+    carts = db.relationship("Carts", backref=db.backref("cart_items", lazy=True), primaryjoin='Cart_items.cart_id == Carts.id')
+    products = db.relationship("Products", backref=db.backref("cart_items", lazy=True), primaryjoin='Cart_items.product_id == Products.id')
 
 class Transactions(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("Users.id"), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     amount = db.Column(db.Boolean, nullable=False)
-    users=db.relationship("Users", backref=db.backref('transactions', lazy=True))
+    users=db.relationship("Users", backref=db.backref('transactions', lazy=True), primaryjoin='Transactions.user_id == Users.id')
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Authenticate user credentials
+        user = authenticate_user(username, password)
+
+        if user:
+            # Set user session and redirect to the appropriate page
+            if user["is_admin"]=="admin":
+                # Admin dashboard or manage sections/products page
+                return redirect(url_for("admin_dashboard"))
+            else:
+                # Regular user dashboard or shopping page
+                return redirect(url_for("user_dashboard"))
+        #else:
+           # flash("User does not exist. Please signup.", "error")
+
+    return render_template("login.html")
+
+# Helper function to authenticate user
+def authenticate_user(username, password):
+    # Get the user record from the database based on the username
+    user = Users.query.filter_by(username=username).first()
+    print(user)
+    if user:
+        # Check if the provided password matches the stored password
+        if user.password == password:
+            # Return the user's details if authenticated
+            return {
+                "id": user.id,
+                "username": user.username,
+                "is_admin": user.is_admin
+            }
+        else:
+            flash("Invalid password, please try again.")
+
+    else:
+        flash("User does not exist, please signup.")
+    # Return None if authentication fails
+    return None
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        # Check if the username is already taken
+        if is_username_taken(username):
+            flash("Username is already taken. Please choose a different username.", "error")
+        else:
+            # Create a new user in the database
+            create_user(username, password)
+            flash("Account created successfully! Please login.", "success")
+            return redirect(url_for("login"))
+
+    return render_template("signup.html")
+
+# Helper function to check if username is already taken
+def is_username_taken(username):
+    # Query the database to check if the username exists and return boolean output
+    return db.session.query(exists().where(Users.username == username)).scalar()
+
+# Helper function to create a new user in the database
+def create_user(username, password):
+    # Create a new user object using the User model
+    new_user = Users(username=username, password=password)
+
+    # Add the new user to the database session
+    db.session.add(new_user)
+
+    try:
+        # Commit the changes to the database
+        db.session.commit()
+        return True  # Return True to indicate success
+    except:
+        # Rollback the changes in case of an error
+        db.session.rollback()
+        return False  # Return False to indicate failure
 
 @app.route("/categories")
 def categories():
@@ -128,4 +212,5 @@ def checkout():
     pass
 
 if __name__ == "__main__":
+    #db.create_all()
     app.run(debug=True)
