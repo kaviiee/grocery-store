@@ -28,6 +28,12 @@ git remote add origin https://github.com/kaviiee/grocery-store.git
 git push origin master
 
 git add .
+
+after git add . ,if there is a line endings warning for crlf, to  handle line ending conversions automatically command:
+git config --global core.autocrlf true
+Manually convert line endings in the file:
+dos2unix migrations/versions/4cea76c4db32_role.py  (dos2unix is the command, file.py is the string given in your warning)
+
 git commit -m 'initial commit'
 git push origin master
 
