@@ -129,7 +129,7 @@ def add_category():
         else:
             flash("Could not add category, please try again", "error")
             return redirect(url_for("routes.admin_categories"))
-    return render_template("admin_categories.html")
+    return redirect(url_for("routes.admin_categories"))
 
 def category_exists(name):
         return db.session.query(exists().where(Categories.name == name)).scalar()
