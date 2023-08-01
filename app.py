@@ -1,7 +1,7 @@
 from flask import Flask
-from models import db, Users
+from models import Users
 from routes import routes
-from extensions import login_manager
+from extensions import login_manager, migrate, db
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 def create_app():
@@ -9,10 +9,8 @@ def create_app():
     app.secret_key = "KEY"
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
     db.init_app(app)
-
     login_manager.login_view = 'routes.login'  # Set the login view function name
     login_manager.init_app(app)
-
     # Load the user object from the database
     @login_manager.user_loader
     def load_user(user_id):
