@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Welcome to My Grocery Store</title>
+    <!-- Bootstrap CSS link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .logo {
+            max-height: 200px; /* Adjust the maximum height of the logo as needed */
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Logo -->
+        <img src="{{ url_for('static', filename='/logo.jpg') }}" alt="My Grocery Store Logo" class="logo mx-auto d-block">
+
+        <!-- Welcome Jumbotron -->
+        <div class="jumbotron">
+            <h1 class="display-4">Welcome to My Grocery Store</h1>
+            <p class="lead">Thank you for visiting our store. Start shopping now!</p>
+            <!-- Add any other content or links as needed -->
+            <hr class="my-4">
+            <p>Explore our wide range of products and enjoy a seamless shopping experience.</p>
+            <!-- Login and Signup links -->
+            <a class="btn btn-primary btn-lg" href="{{ url_for('login') }}" role="button">Login</a>
+            <a class="btn btn-success btn-lg" href="{{ url_for('signup') }}" role="button">Signup</a>
+        </div>
+    </div>
+</body>
+</html>

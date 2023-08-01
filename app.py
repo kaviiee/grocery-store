@@ -3,20 +3,24 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import exists
 from flask_migrate import Migrate
 from datetime import datetime
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
 app.secret_key="KEY"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
 db=SQLAlchemy(app)
 migrate=Migrate(app,db)
+# Initialize Flask-Login
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 #db.init_app(app)
 #app.app_context().push()
     
-class Users(db.Model):
+class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
-    is_admin = db.Column(db.String, default="user", nullable=False)
+    role = db.Column(db.String, default="user", nullable=False)
     def __repr__(self):
         return '<User %r>' % self.id
     
@@ -57,6 +61,15 @@ class Transactions(db.Model):
     amount = db.Column(db.Boolean, nullable=False)
     users=db.relationship("Users", backref=db.backref('transactions', lazy=True), primaryjoin='Transactions.user_id == Users.id')
 
+# Load user callback for Flask-Login
+@login_manager.user_loader
+def load_user(user_id):
+    return Users.query.get(int(user_id))
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
 @app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -67,15 +80,16 @@ def login():
         user = authenticate_user(username, password)
 
         if user:
-            # Set user session and redirect to the appropriate page
-            if user["is_admin"]=="admin":
+            user_obj = Users.query.filter_by(username=username).first()
+
+            # Log in the user using Flask-Login
+            login_user(user_obj)
+            if user["role"]=="admin":
                 # Admin dashboard or manage sections/products page
-                return redirect(url_for("admin_dashboard"))
+                return redirect(url_for("admin_home"))
             else:
                 # Regular user dashboard or shopping page
                 return redirect(url_for("user_dashboard"))
-        #else:
-           # flash("User does not exist. Please signup.", "error")
 
     return render_template("login.html")
 
@@ -90,7 +104,7 @@ def authenticate_user(username, password):
             return {
                 "id": user.id,
                 "username": user.username,
-                "is_admin": user.is_admin
+                "role": user.role
             }
         else:
             flash("Invalid password, please try again.")
@@ -105,15 +119,20 @@ def signup():
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
-        is_admin = request.form.get("role")
+        role = request.form.get("role")
         # Check if the username is already taken
         if is_username_taken(username):
             flash("Username is already taken. Please choose a different username.", "error")
         else:
             # Create a new user in the database
-            create_user(username, password, is_admin)
-            flash("Account created successfully! Please login.", "success")
-            return redirect(url_for("login"))
+            success=create_user(username, password, role)
+            if success:
+                flash("Account created successfully! Please login.", "success")
+                return redirect(url_for("login"))
+            else:
+                flash("There was an error creating your account, please try again", "failure")
+                return redirect(url_for("signup"))
+
 
     return render_template("signup.html")
 
@@ -123,9 +142,9 @@ def is_username_taken(username):
     return db.session.query(exists().where(Users.username == username)).scalar()
 
 # Helper function to create a new user in the database
-def create_user(username, password, is_admin):
+def create_user(username, password, role):
     # Create a new user object using the User model
-    new_user = Users(username=username, password=password, is_admin=is_admin)
+    new_user = Users(username=username, password=password, role=role)
 
     # Add the new user to the database session
     db.session.add(new_user)
@@ -139,11 +158,17 @@ def create_user(username, password, is_admin):
         db.session.rollback()
         return False  # Return False to indicate failure
 
+@app.route("/admin_home", methods=["GET", "POST"])
+@login_required
+def admin_home():
+    return render_template("admin_home.html")
+
 @app.route("/categories")
+@login_required
 def categories():
     # Fetch all categories from the database?
     # Display a template with a list of categories
-    pass
+    return render_template("categories.html")
 
 @app.route("/add_category", methods=["GET", "POST"])
 def add_category():
@@ -167,7 +192,7 @@ def delete_category(category_id):
 def products():
     # Fetch all products from the database
     # Display a template with a list of products
-    pass
+    return render_template("produts.html")
 
 @app.route("/add_product", methods=["GET", "POST"])
 def add_product():

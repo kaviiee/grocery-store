@@ -6,6 +6,7 @@ virtualenv env
 .\\env\Scripts\activate.bat
 
 pip install flask flask-sqlalchemy
+pip install flask-login
 python firstflask
 ->FOR DB CREATION
 python (starts python shell)
@@ -29,3 +30,13 @@ git push origin master
 git add .
 git commit -m 'initial commit'
 git push origin master
+
+->db migration
+pip install Flask-Migrate
+--initial migration
+flask db init
+flask db migrate -m "Initial migration"
+flask db upgrade
+--subsequent migration
+flask db migrate -m "Description of changes"
+flask db upgrade
