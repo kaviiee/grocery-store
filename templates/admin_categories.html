@@ -5,7 +5,19 @@
 </ul>
 {% endblock %}
 {% block div %}
-    
+{% if category is defined %}
+<form action="/edit_category/{{category.id}}" method="post">
+    <h3>Edit Category</h3>
+    <br>
+    <label for="edit_category" class="form-label">Edit Category:</label>
+	<input style="width: 270px;" type="text" class="form-control" value="{{category.name}}" name="edit_category" id="edit_category" placeholder="Category name" required>
+    <br>
+    <label for="img_url" class="form-label">Image URL:</label>
+	<input style="width: 270px;" type="text" class="form-control" value="{{category.img_url}}" name="img_url" id="img_url" placeholder="Image URL">
+    <br>
+    <input type="submit" class="btn btn-primary" name="edit_category" value="Edit Category" id="edit_category">
+</form>
+{% else %}
 <form action="/add_category" method="post">
     <h3>Add Category</h3>
     <br>
@@ -15,8 +27,9 @@
     <label for="img_url" class="form-label">Image URL:</label>
 	<input style="width: 270px;" type="text" class="form-control" name="img_url" id="img_url" placeholder="Image URL">
     <br>
-    <input type="submit" class="btn btn-primary" name="add_category" value="Add Category" id="add_category">
+    <input type="submit" class="btn btn-primary" name="add_category" id="add_category">
 </form>
+{% endif %}
 {% with messages = get_flashed_messages() %}
         {% if messages %}
             <ul class="flash-messages">
@@ -34,16 +47,16 @@
 <div class="col-md-3"> 
     <div class="panel panel-success">
         <div class="panel-heading">{{cat.name}}</div>
-        <div class="panel-body">
+        <div class="panel-body" style="height: 270px;">
             {% if cat.img_url == "" %}
                 <p>No image Available</p>
             {% else %}
-                <img src="static/{{cat.img_url}}" class="img-responsive" alt="Image">
+                <img src="{{url_for('static', filename=cat.img_url)}}" class="img-responsive" alt="Image">
             {% endif %}
         </div>
         <div class="panel-footer">
-            <a href="/edit_category" class="btn btn-primary" name="edit" value="edit">Edit</a>
-            <a href="/delete_category" class="btn btn-primary" name="delete" value="delete">Delete</a>
+            <a href="/edit_category/{{cat.id}}" class="btn btn-primary" name="edit" value="edit">Edit</a>
+            <a href="/delete_category/{{cat.id}}" class="btn btn-primary" name="delete" value="delete">Delete</a>
         </div>
     </div>
 </div>

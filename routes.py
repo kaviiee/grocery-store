@@ -149,15 +149,38 @@ def create_category(name, img_url):
 
 @routes.route("/edit_category/<int:category_id>", methods=["GET", "POST"])
 def edit_category(category_id):
-    # Edit an existing category in the database
-    # Redirect to categories after successful edit
-    pass
+    category = Categories.query.get_or_404(category_id)
+    if request.method=="POST":
+        category.name=request.form["edit_category"]
+        category.img_url=request.form["img_url"]
+        try:
+            db.session.commit()
+            flash("Category edited sucessfully", "success")
+            return redirect(url_for("routes.admin_categories"))
+        except:
+            db.session.rollback()
+            flash("Could not edit category, please try again", "error")
+        return redirect(url_for("routes.admin_categories"))
+    
+    cats=Categories.query.all()
+    return render_template("admin_categories.html", category=category, cats=cats)
 
-@routes.route("/delete_category/<int:category_id>", methods=["POST"])
+@routes.route("/delete_category/<int:category_id>")
 def delete_category(category_id):
+    category = Categories.query.filter_by(id=category_id).first()
+    db.session.delete(category)
+    try:
+        db.session.commit()
+        flash("Category deleted sucessfully", "success")
+        return redirect(url_for("routes.admin_categories"))
+    except:
+        db.session.rollback()
+        flash("Could not delete category, please try again", "error")
+        return redirect(url_for("routes.admin_categories"))
+
+    return redirect(url_for("routes.admin_categories"))
     # Delete an existing category from the database
     # Redirect to categories after successful deletion
-    pass
 
 @routes.route("/products")
 def products():
