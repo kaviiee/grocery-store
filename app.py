@@ -9,6 +9,7 @@ def create_app():
     app.secret_key = "KEY"
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
     db.init_app(app)
+    migrate.init_app(app, db)
     login_manager.login_view = 'routes.login'  # Set the login view function name
     login_manager.init_app(app)
     # Load the user object from the database
