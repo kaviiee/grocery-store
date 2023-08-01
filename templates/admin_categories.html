@@ -5,6 +5,47 @@
 </ul>
 {% endblock %}
 {% block div %}
-display allcategories
-add category
+    
+<form action="/add_category" method="post">
+    <h3>Add Category</h3>
+    <br>
+    <label for="add_category" class="form-label">Add Category:</label>
+	<input style="width: 270px;" type="text" class="form-control" name="add_category" id="add_category" placeholder="Category name" required>
+    <br>
+    <label for="img_url" class="form-label">Image URL:</label>
+	<input style="width: 270px;" type="text" class="form-control" name="img_url" id="img_url" placeholder="Image URL">
+    <br>
+    <input type="submit" class="btn btn-primary" name="add_category" value="Add Category" id="add_category">
+</form>
+{% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li class="flash-message">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+<br>
+<br>
+<h3>Available categories are:</h3>
+<br>
+{% for cat in cats%}
+<div class="col-md-3"> 
+    <div class="panel panel-success">
+        <div class="panel-heading">{{cat.name}}</div>
+        <div class="panel-body">
+            {% if cat.img_url == "" %}
+                <p>No image Available</p>
+            {% else %}
+                <img src={{cat.img_url}} class="img-responsive" alt="Image">
+            {% endif %}
+        </div>
+        <div class="panel-footer">
+            <a href="/edit_category" class="btn btn-primary" name="edit" value="edit">Edit</a>
+            <a href="/delete_category" class="btn btn-primary" name="delete" value="delete">Delete</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

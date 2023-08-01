@@ -110,15 +110,42 @@ def admin_home():
 @routes.route("/admin_categories")
 @login_required
 def admin_categories():
+    cats=Categories.query.all()
     # Fetch all categories from the database?
     # Display a template with a list of categories
-    return render_template("admin_categories.html")
+    return render_template("admin_categories.html", cats=cats)
 
 @routes.route("/add_category", methods=["GET", "POST"])
 def add_category():
-    # Add a new category to the database
-    # Redirect to categories after successful addition
-    pass
+    name = request.form.get("add_category")
+    img_url = request.form.get("img_url")
+    if category_exists(name):
+        flash("Category already exists")
+    else:
+        success=create_category(name, img_url)
+        if success:
+            flash("Category successfully added", "success")
+            return redirect(url_for("routes.admin_categories"))
+        else:
+            flash("Could not add category, please try again", "error")
+            return redirect(url_for("routes.admin_categories"))
+    return render_template("admin_categories.html")
+
+def category_exists(name):
+        return db.session.query(exists().where(Categories.name == name)).scalar()
+
+def create_category(name, img_url):
+     
+    new_category = Categories(name=name, img_url=img_url)
+    db.session.add(new_category)
+    try:
+        # Commit the changes to the database
+        db.session.commit()
+        return True  # Return True to indicate success
+    except:
+        # Rollback the changes in case of an error
+        db.session.rollback()
+        return False  # Return False to indicate failure
 
 @routes.route("/edit_category/<int:category_id>", methods=["GET", "POST"])
 def edit_category(category_id):
