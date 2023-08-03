@@ -52,7 +52,7 @@
         <div class="panel-footer">
             <a href="/edit_category/{{cat.id}}" class="btn btn-primary" name="edit" value="edit">Edit</a>
             <a href="/delete_category/{{cat.id}}" class="btn btn-primary" name="delete" value="delete">Delete</a>
-            <a href="/admin_products" class="btn btn-primary" name="Products" value="products">Products</a>
+            <a href="{{ url_for('routes.admin_products', category=cat.name) }}" class="btn btn-primary" name="Products" value="products">Products</a>
         </div>
     </div>
 </div>

@@ -35,7 +35,7 @@ def login():
                 return redirect(url_for("routes.admin_home"))
             else:
                 # Regular user dashboard or shopping page
-                return redirect(url_for("routes.user_dashboard"))
+                return redirect(url_for("routes.user_home"))
 
     return render_template("login.html")
 
@@ -184,6 +184,8 @@ def delete_category(category_id):
 @routes.route("/admin_products", methods=["GET", "POST"])
 @login_required
 def admin_products():
+    category_name = request.args.get('category')
+    
     if request.method == "POST":
         field = request.form.get("field")
         value = request.form.get("value")
@@ -208,6 +210,18 @@ def admin_products():
             products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
     else:
         products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
+        
+    if category_name:
+        category = Categories.query.filter_by(name=category_name).first()
+        if category:
+            products = category.products
+            flash(f"Showing products for category: {category_name}", "success")
+        else:
+            flash("Category does not exist. Please add the category or enter a valid category name", "failure")
+            return redirect(url_for("routes.admin_categories"))
+    else:
+        products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
+
     if not products:
         flash("No Products found. Add them.","success")
     products_grouped = {}
@@ -335,3 +349,9 @@ def checkout():
 @routes.route("/admin_contactus")
 def contactus():
     return render_template("admin_contactus.html")
+
+@routes.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('routes.login')) 

@@ -29,7 +29,7 @@ class Products(db.Model):
 class Carts(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, unique=True)
-    creation_date = db.Column(db.DateTime, nullable=False)
+    creation_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     status = db.Column(db.String, nullable=False)
     users = db.relationship("Users", backref=db.backref("carts", lazy=True), primaryjoin='Carts.user_id == Users.id')
 
