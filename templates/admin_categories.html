@@ -46,7 +46,7 @@
             {% if cat.img_url == "" %}
                 <p>No image Available</p>
             {% else %}
-                <img src="{{url_for('static', filename=cat.img_url)}}" class="img-responsive" alt="Image">
+                <img src="static/{{cat.img_url}}" class="img-responsive" alt="Image">
             {% endif %}
         </div>
         <div class="panel-footer">

@@ -6,6 +6,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 
 def create_app():
     app = Flask(__name__)
+    app.static_url_path = '/static'
     app.secret_key = "KEY"
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///grocery_store.db'
     db.init_app(app)

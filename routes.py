@@ -270,7 +270,7 @@ def edit_product(product_id):
     prod = Products.query.get_or_404(product_id)
     if request.method=="POST":
         #prod.name=request.form["edit_product"]
-        prod.name = request.form.get("add_product")
+        prod.name = request.form.get("edit_product")
         category = request.form.get("category")
         manufacture_date = request.form.get("mfg_date")
         expiry_date = request.form.get("expiry_date")
@@ -299,39 +299,19 @@ def edit_product(product_id):
     return render_template("admin_products.html", prod=prod, products_grouped=products_grouped)
 
 
-@routes.route("/delete_product/<int:product_id>", methods=["POST"])
+@routes.route("/delete_product/<int:product_id>")
 def delete_product(product_id):
-    # Delete an existing product from the database
-    # Redirect to products after successful deletion
-    pass
-
-@routes.route("/search", methods=["GET", "POST"])
-def search():
-    field = request.form.get("field")
-    value = request.form.get("value")
-    
-    if field and value:
-        if field == "category":
-        # Handle category search differently
-            category = Categories.query.filter_by(name=value).first()
-            if category is None:
-                flash("Category not found, please enter valid category name", "failure")
-                return redirect(url_for("routes.admin_products"))
-
-            products = category.products
-        else:
-            attribute = getattr(Products, field)
-            products = Products.query.options(joinedload(Products.categories)).filter(attribute==value).all()
-    else:
-        return redirect("/admin_products")
-    products_grouped = {}
-    for product in products:
-        category_name = product.categories.name
-        if category_name not in products_grouped:
-            products_grouped[category_name] = []
-        products_grouped[category_name].append(product)
-
-    return render_template("admin_products.html", products_grouped=products_grouped)
+    prod = Products.query.filter_by(id=product_id).first()
+    db.session.delete(prod)
+    try:
+        db.session.commit()
+        flash("Product deleted sucessfully", "success")
+        return redirect(url_for("routes.admin_products"))
+    except:
+        db.session.rollback()
+        flash("Could not delete product, please try again", "error")
+        return redirect(url_for("routes.admin_products"))
+    return redirect(url_for("routes.admin_products"))
 
 @routes.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):
@@ -351,3 +331,7 @@ def checkout():
     # Deduct quantities from the inventory, handle out of stock cases
     # Show the total amount to be paid for the transaction
     pass
+
+@routes.route("/admin_contactus")
+def contactus():
+    return render_template("admin_contactus.html")
