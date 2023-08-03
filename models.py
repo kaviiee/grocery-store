@@ -21,6 +21,7 @@ class Products(db.Model):
     manufacture_date = db.Column(db.DateTime, nullable=False)
     expiry_date = db.Column(db.DateTime, nullable=False)
     rate_per_unit=db.Column(db.Float, nullable=False)
+    unit=db.Column(db.String, nullable=False, default="Rs/kg")
     available_quantity=db.Column(db.Integer, nullable=False)
     category_id=db.Column(db.Integer, db.ForeignKey("categories.id"), nullable=False)
     categories=db.relationship("Categories", backref='products', primaryjoin='Products.category_id == Categories.id')

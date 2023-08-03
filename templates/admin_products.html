@@ -1,0 +1,141 @@
+{% extends "admin_base.html" %}
+{% block div %}
+<div class="row">
+<div class="col-md-4">
+<form action="/admin_products" method="post">
+<h3>Search Products</h3>
+<br>
+<label for='field' class="form-label">Search based on:</label><br>
+<select class="form-control" name="field" aria-label="Default select example" required>
+    <option selected name="name" value="name">Name</option>
+    <option name="category" value="category">Category</option>
+    <option name="rate_per_unit" value="rate_per_unit">Rate per unit</option>
+</select>
+<br>
+<label for='value' class="form-label">Value:</label>
+<input type="text" class="form-control" name="value" id="value" placeholder="Value" required>
+<br>
+<input type="submit" class="btn btn-primary" name="submit" id="submit" value="Search">
+<br>
+<p> Category does not exist? Add it. <a href="/admin_categories" class="btn btn-primary">Add Category</a></p>
+</form>
+</div>
+{% if prod is defined %}
+<form action="/edit_category/{{prod.id}}" method="post">
+    <h3>Edit Product</h3>
+    <br>
+    <label for="edit_product" class="form-label">Add product:</label>
+	<input style="width: 270px;" type="text" class="form-control" name="edit_product" value="{{prod.name}}" id="edit_product" placeholder="Product name" required>
+    <br>
+    <label for="category" class="form-label">Category:</label>
+	<input style="width: 270px;" type="text" class="form-control" value="{{prod.categories.name}}" name="category" id="category" placeholder="Category name" required>
+    <br>
+    <label for="mfg_date" class="form-label">Manufacture Date in "YYYY-MM-DD" format:</label>
+	<input style="width: 270px;" type="text" pattern="\d{4}-\d{2}-\d{2}" class="form-control" value="{{prod.manufacture_date}}" name="mfg_date" id="mfg_date" placeholder="YYYY-MM-DD" required>
+    <br>
+    </div>
+    <div class="col-md-4">
+    <br>
+    <label for="expiry_date" class="form-label">Expiry Date in "YYYY-MM-DD" format:</label>
+	<input style="width: 270px;" type="text" pattern="\d{4}-\d{2}-\d{2}" class="form-control" value="{{prod.expiry_date}}" name="expiry_date" id="expiry_date" placeholder="YYYY-MM-DD" required>
+    <br>
+    <label for="rate" class="form-label">Rate per unit:</label>
+	<input style="width: 270px;" type="number" step="0.01" class="form-control" value="{{prod.rate_per_unit}}" name="rate" id="rate" placeholder="rate" required>
+    <br>
+    <label for="unit" class="form-label">Unit:</label>
+    <select class="form-control" name="unit" aria-label="Default select example" required>
+        <option name="unit1" value="unit1" {% if prod.unit == 'unit1' %} selected {% endif %}>Rs/Kg</option>
+        <option name="unit2" value="unit2" {% if prod.unit == 'unit2' %} selected {% endif %}>Rs/g</option>
+        <option name="unit3" value="unit3" {% if prod.unit == 'unit3' %} selected {% endif %}>Rs/l</option>
+        <option name="unit4" value="unit4" {% if prod.unit == 'unit4' %} selected {% endif %}>Rs/ml</option>
+    </select>
+    <br>
+    <label for="qty" class="form-label">Available Quantity:</label>
+	<input style="width: 270px;" value="{{prod.available_quantity}}" type="number" class="form-control" name="qty" id="qty">
+    <br>
+    <input type="submit" class="btn btn-primary" name="add_category" id="add_category">
+    </div>
+</form>
+
+</form>
+{% else %}
+<form action="/add_product" method="post">
+    <div class="col-md-4">
+
+    <h3>Add Product</h3>
+    <br>
+    <label for="add_product" class="form-label">Add product:</label>
+	<input style="width: 270px;" type="text" class="form-control" name="add_product" id="add_product" placeholder="Product name" required>
+    <br>
+    <label for="category" class="form-label">Category:</label>
+	<input style="width: 270px;" type="text" class="form-control" name="category" id="category" placeholder="Category name" required>
+    <br>
+    <label for="mfg_date" class="form-label">Manufacture Date in "YYYY-MM-DD" format:</label>
+	<input style="width: 270px;" type="text" pattern="\d{4}-\d{2}-\d{2}" class="form-control" name="mfg_date" id="mfg_date" placeholder="YYYY-MM-DD" required>
+    <br>
+    </div>
+    <div class="col-md-4">
+    <br>
+    <label for="expiry_date" class="form-label">Expiry Date in "YYYY-MM-DD" format:</label>
+	<input style="width: 270px;" type="text" pattern="\d{4}-\d{2}-\d{2}" class="form-control" name="expiry_date" id="expiry_date" placeholder="YYYY-MM-DD" required>
+    <br>
+    <label for="rate" class="form-label">Rate per unit:</label>
+	<input style="width: 270px;" type="number" step="0.01" class="form-control" name="rate" id="rate" placeholder="rate" required>
+    <br>
+    <label for="unit" class="form-label">Unit:</label>
+    <select class="form-control" name="unit" aria-label="Default select example" required>
+        <option name="unit1" value="unit1" selected >Rs/Kg</option>
+        <option name="unit2" value="unit2" >Rs/g</option>
+        <option name="unit3" value="unit3" >Rs/l</option>
+        <option name="unit4" value="unit4" >Rs/ml</option>
+    </select>
+    <br>
+    <label for="qty" class="form-label">Available Quantity:</label>
+	<input style="width: 270px;" type="number" class="form-control" name="qty" id="qty">
+    <br>
+    <input type="submit" class="btn btn-primary" name="add_category" id="add_category">
+    </div>
+</form>
+{% endif %}
+
+</div>
+{% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li class="flash-message">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+<br>
+<br>
+<div class="row">
+    <div class="col-md-12">
+      <h3>Available Products are:</h3>
+      {% for category, products in products_grouped.items() %}
+        <h4>{{ category }}</h4>
+        <div class="row">
+          {% for product in products %}
+          <div class="col-md-3"> 
+            <div class="panel panel-success">
+                <div class="panel-heading">{{product.name}}</div>
+                <div class="panel-body" style="height: 160px;">
+                    <p>Rate per unit: {{product.rate_per_unit}}</p>
+                    <p>Available quantity: {{product.available_quantity}}</p>
+                    <p>Manufacture Date: {{product.manufacture_date}}</p>
+                    <p>Expiry Date: {{product.expiry_date}}</p>
+                </div>
+                <div class="panel-footer">
+                    <a href="/edit_product/{{product.id}}" class="btn btn-primary" name="edit" value="edit">Edit</a>
+                    <a href="/delete_product/{{product.id}}" class="btn btn-primary" name="delete" value="delete">Delete</a>
+                </div>
+            </div>
+        </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+

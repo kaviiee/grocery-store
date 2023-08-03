@@ -46,3 +46,8 @@ flask db upgrade
 --subsequent migration
 flask db migrate -m "Description of changes"
 flask db upgrade
+
+to revert a migration
+flask db stamp head
+flask db history
+flask db downgrade <migration_id>

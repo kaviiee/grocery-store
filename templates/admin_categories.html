@@ -1,9 +1,4 @@
 {% extends "admin_base.html" %}
-{% block ul %}
-<ul class="nav navbar-nav navbar-right">
-    <li><input type="text" name="search" placeholder="Search"><span class="glyphicon glyphicon-search"></span></li>
-</ul>
-{% endblock %}
 {% block div %}
 {% if category is defined %}
 <form action="/edit_category/{{category.id}}" method="post">
@@ -57,6 +52,7 @@
         <div class="panel-footer">
             <a href="/edit_category/{{cat.id}}" class="btn btn-primary" name="edit" value="edit">Edit</a>
             <a href="/delete_category/{{cat.id}}" class="btn btn-primary" name="delete" value="delete">Delete</a>
+            <a href="/admin_products" class="btn btn-primary" name="Products" value="products">Products</a>
         </div>
     </div>
 </div>
