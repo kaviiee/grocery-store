@@ -39,16 +39,23 @@
           <div class="col-md-3"> 
             <div class="panel panel-success">
                 <div class="panel-heading">{{product.name}}</div>
-                <div class="panel-body" style="height: 160px;">
+                <form action="/add_to_cart/{{product.id}}" method="post">
+                <div class="panel-body" style="height: 240px;">
                     <p>Rate per unit: {{product.rate_per_unit}}</p>
                     <p>Unit: {{product.unit}}</p>
                     <p>Available quantity: {{product.available_quantity}}</p>
                     <p>Manufacture Date: {{product.manufacture_date.strftime('%Y-%m-%d')}}</p>
                     <p>Expiry Date: {{product.expiry_date.strftime('%Y-%m-%d')}}</p>
+                    
+                    {% if product.available_quantity==0 %} <p> Out of Stock</p>
+                    {% else %}<p>Quantity:<input type="number" value="1" min="1" max="{{product.available_quantity}}" name="qty"> </p>
+                    {% endif %}
+                    
                 </div>
                 <div class="panel-footer">
-                    <a href="/add_to_cart/{{product.id}}" class="btn btn-primary" name="add_to_cart" value="add_to_cart">Add to Cart</a>
+                    <input type="submit" class="btn btn-primary" name="add_to_cart" value="Add to Cart">
                 </div>
+              </form>
             </div>
         </div>
           {% endfor %}

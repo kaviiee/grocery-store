@@ -39,12 +39,13 @@ class Cart_items(db.Model):
     cart_id = db.Column(db.Integer, db.ForeignKey("carts.id"), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+    total = db.Column(db.Float, nullable=False, default=0)
     carts = db.relationship("Carts", backref=db.backref("cart_items", lazy=True), primaryjoin='Cart_items.cart_id == Carts.id')
     products = db.relationship("Products", backref=db.backref("cart_items", lazy=True), primaryjoin='Cart_items.product_id == Products.id')
 
 class Transactions(db.Model):
     id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    amount = db.Column(db.Boolean, nullable=False)
+    amount = db.Column(db.Float, nullable=False, default=0)
     users=db.relationship("Users", backref=db.backref('transactions', lazy=True), primaryjoin='Transactions.user_id == Users.id')

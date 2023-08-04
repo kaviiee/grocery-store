@@ -325,6 +325,16 @@ def delete_product(product_id):
 @routes.route("/user_home", methods=["GET", "POST"])
 @login_required
 def user_home():
+    if not db.session.query(exists().where(Carts.user_id == current_user.id)).scalar():
+        new_cart = Carts(user_id=current_user.id, status="active")
+        db.session.add(new_cart)
+
+        try:
+            db.session.commit()
+            flash("Cart created successfully", "success")
+        except Exception as e:
+            db.session.rollback()
+            flash("Could not create cart, please try again", "error")
     return render_template("user_home.html")
 
 @routes.route("/user_categories")
@@ -347,7 +357,7 @@ def user_products():
                 # Handle category search differently
                 category = Categories.query.filter_by(name=value).first()
                 if category is None:
-                    flash("Category does not exist. Please add the category or enter a valid category name", "failure")
+                    flash("Category does not exist. Please enter a valid category name", "failure")
                     return redirect(url_for("routes.user_products"))
 
                 products = category.products
@@ -367,8 +377,8 @@ def user_products():
             products = category.products
             flash(f"Showing products for category: {category_name}", "success")
         else:
-            flash("Category does not exist. Please add the category or enter a valid category name", "failure")
-            return redirect(url_for("routes.admin_categories"))
+            flash("Category does not exist. Please enter a valid category name", "failure")
+            return redirect(url_for("routes.user_categories"))
     
     if not products:
         flash("No Products found.","success")
@@ -382,24 +392,66 @@ def user_products():
     # Display a template with a list of products
     return render_template("user_products.html", products_grouped=products_grouped)
 
-@routes.route("/add_to_cart/<int:product_id>", methods=["POST"])
+@routes.route("/add_to_cart/<int:product_id>", methods=["GET", "POST"])
+@login_required
 def add_to_cart(product_id):
-    # Add a product to the user's shopping cart
-    # Redirect to the cart view after successful addition
-    pass
+    qty=float(request.form.get("qty"))
+    cart_id = Carts.query.filter_by(user_id=current_user.id).first().id
+    total = qty*Products.query.filter_by(id=product_id).first().rate_per_unit
+    cart_item = Cart_items(cart_id=cart_id, product_id=product_id,quantity=qty, total=total)
+    db.session.add(cart_item)
+    try:
+        db.session.commit()
+        flash("Product added to cart successfully", "success")
+    except:
+        db.session.rollback()
+        flash("Could not add Product to your cart, please try again.", "error")
+    return redirect(url_for("routes.user_cart"))
 
-@routes.route("/cart")
-def cart():
-    # Display the user's shopping cart with selected products
-    # Allow the user to remove items or proceed to checkout
-    pass
+@routes.route("/user_cart")
+@login_required
+def user_cart():
+    cart_id = Carts.query.filter_by(user_id=current_user.id).first().id
+    cart_items = Cart_items.query.filter_by(cart_id=cart_id).all()
+    cart_total=0
+    for item in cart_items:
+        cart_total+=item.total
+    return render_template("user_cart.html", cart_items=cart_items, cart_total=cart_total)
 
-@routes.route("/checkout", methods=["GET", "POST"])
-def checkout():
-    # Process the user's cart and create a transaction record
-    # Deduct quantities from the inventory, handle out of stock cases
-    # Show the total amount to be paid for the transaction
-    pass
+@routes.route("/remove_cart_item/<int:item_id>")
+@login_required
+def remove_cart_item(item_id):
+    item = Cart_items.query.filter_by(id=item_id).first()
+    db.session.delete(item)
+    try:
+        db.session.commit()
+        flash("item removed from cart successfully", "success")
+    except:
+        db.session.rollback()
+        flash("Could not remove item, please try again", "failure")
+    return redirect(url_for("routes.user_cart"))
+
+@routes.route("/checkout/<float:cart_total>", methods=["GET", "POST"])
+def checkout(cart_total):
+    if cart_total==0:
+        flash("you cannot checkout with no items in your cart", "error")
+        return redirect(url_for("routes.user_cart"))
+    try:
+        new_transaction = Transactions(user_id=current_user.id, amount=cart_total)
+        db.session.add(new_transaction)
+        db.session.commit()
+        cart_id=Carts.query.filter_by(user_id=current_user.id).first().id
+        cart_items=Cart_items.query.filter_by(cart_id=cart_id).all()
+        for item in cart_items:
+            db.session.delete(item)
+        db.session.commit()
+        flash("Transaction successful", "success")
+        return render_template("checkout.html", cart_total=cart_total)
+    except Exception as e :
+        db.session.rollback()
+        print(e)
+        flash("transaction could not be completed, please checkout again", "failure" )
+        return redirect(url_for("routes.user_cart"))
 
 @routes.route("/admin_contactus")
 def contactus():

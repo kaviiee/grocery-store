@@ -6,24 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-  <style>
-    /* Remove the navbar's default rounded borders and increase the bottom margin */ 
-    .navbar {
-      margin-bottom: 50px;
-      border-radius: 0;
-    }
-    
-    /* Remove the jumbotron's default bottom margin */ 
-     .jumbotron {
-      margin-bottom: 0;
-    }
-   
-    /* Add a gray background color and some padding to the footer */
-    footer {
-      background-color: #f2f2f2;
-      padding: 25px;
-    }
-  </style>
+  <link rel="stylesheet" href="{{url_for('static', filename='css/base.css')}}">
 </head>
 <body>
 
@@ -51,14 +34,14 @@
         <li><a href="/user_contactus">ContactUs</a></li>
     </ul>
     <ul class="nav navbar-nav navbar-right">
-        <li><a href="/cart"><span class="glyphicon glyphicon-shopping-cart"></span> Cart</a></li>
+        <li><a href="/user_cart"><span class="glyphicon glyphicon-shopping-cart"></span> Cart</a></li>
         <li><a href="/logout"><span class="glyphicon glyphicon-user"></span> Logout</a></li>
       </ul>
     </div>
   </div>
 </nav>
 
-<div class="container">  
+<div class="container page">  
   {% block div %}
   {% endblock %}
 </div>

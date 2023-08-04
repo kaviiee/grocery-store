@@ -1,0 +1,40 @@
+{% extends "user_base.html" %}
+{% block div %}
+{% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li class="flash-message">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+    <h1>Cart Total: {{cart_total}}</h1>
+    <a href="/checkout/{{cart_total}}" class="btn btn-primary" name="checkout" value="checkout">Checkout</a>
+<div class="row">
+    <div class="col-md-12">
+      <h3>Your Cart:</h3>
+      {% for item in cart_items %}
+        
+          <div class="col-md-3"> 
+            <div class="panel panel-success">
+                <div class="panel-heading">{{item.products.name}}</div>
+                <div class="panel-body" style="height: 220px;">
+                    <p>Category: {{item.products.categories.name}}</p>
+                    <p>Quantity ordered: {{item.quantity}}</p>
+                    <p>Rate per unit: {{item.products.rate_per_unit}}</p>
+                    <p>Unit: {{item.products.unit}}</p>
+                    <p>Manufacture Date: {{item.products.manufacture_date.strftime('%Y-%m-%d')}}</p>
+                    <p>Expiry Date: {{item.products.expiry_date.strftime('%Y-%m-%d')}}</p>
+                    <p>Total: {{item.total}}</p>
+                </div>
+                <div class="panel-footer">
+                    <a href="/remove_cart_item/{{item.id}}" class="btn btn-primary" name="remove_cart_item" value="remove_cart_item">Remove product</a>
+                </div>
+            </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}
+
