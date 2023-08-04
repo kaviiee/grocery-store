@@ -1,0 +1,59 @@
+{% extends "user_base.html" %}
+{% block div %}
+<div class="row">
+    <div class="col-md-4">
+    <form action="/user_products" method="post">
+    <h3>Search Products</h3>
+    <br>
+    <label for='field' class="form-label">Search based on:</label><br>
+    <select class="form-control" name="field" aria-label="Default select example" required>
+        <option selected name="name" value="name">Name</option>
+        <option name="category" value="category">Category</option>
+        <option name="rate_per_unit" value="rate_per_unit">Rate per unit</option>
+    </select>
+    <br>
+    <label for='value' class="form-label">Value:</label>
+    <input type="text" class="form-control" name="value" id="value" placeholder="Value" required>
+    <br>
+    <input type="submit" class="btn btn-primary" name="submit" id="submit" value="Search">
+    <br>
+    </form>
+    </div>
+</div>
+{% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flash-messages">
+                {% for message in messages %}
+                    <li class="flash-message">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+<div class="row">
+    <div class="col-md-12">
+      <h3>Available Products are:</h3>
+      {% for category, products in products_grouped.items() %}
+        <h4>{{ category }}</h4>
+        <div class="row">
+          {% for product in products %}
+          <div class="col-md-3"> 
+            <div class="panel panel-success">
+                <div class="panel-heading">{{product.name}}</div>
+                <div class="panel-body" style="height: 160px;">
+                    <p>Rate per unit: {{product.rate_per_unit}}</p>
+                    <p>Unit: {{product.unit}}</p>
+                    <p>Available quantity: {{product.available_quantity}}</p>
+                    <p>Manufacture Date: {{product.manufacture_date.strftime('%Y-%m-%d')}}</p>
+                    <p>Expiry Date: {{product.expiry_date.strftime('%Y-%m-%d')}}</p>
+                </div>
+                <div class="panel-footer">
+                    <a href="/add_to_cart/{{product.id}}" class="btn btn-primary" name="add_to_cart" value="add_to_cart">Add to Cart</a>
+                </div>
+            </div>
+        </div>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+{% endblock %}

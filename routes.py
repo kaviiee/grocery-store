@@ -113,8 +113,6 @@ def admin_home():
 @login_required
 def admin_categories():
     cats=Categories.query.all()
-    # Fetch all categories from the database?
-    # Display a template with a list of categories
     return render_template("admin_categories.html", cats=cats)
 
 @routes.route("/add_category", methods=["GET", "POST"])
@@ -185,7 +183,8 @@ def delete_category(category_id):
 @login_required
 def admin_products():
     category_name = request.args.get('category')
-    
+    products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
+
     if request.method == "POST":
         field = request.form.get("field")
         value = request.form.get("value")
@@ -208,8 +207,6 @@ def admin_products():
         else:
             flash("please enter a value", "error")
             products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
-    else:
-        products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
         
     if category_name:
         category = Categories.query.filter_by(name=category_name).first()
@@ -219,8 +216,6 @@ def admin_products():
         else:
             flash("Category does not exist. Please add the category or enter a valid category name", "failure")
             return redirect(url_for("routes.admin_categories"))
-    else:
-        products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
 
     if not products:
         flash("No Products found. Add them.","success")
@@ -326,6 +321,66 @@ def delete_product(product_id):
         flash("Could not delete product, please try again", "error")
         return redirect(url_for("routes.admin_products"))
     return redirect(url_for("routes.admin_products"))
+
+@routes.route("/user_home", methods=["GET", "POST"])
+@login_required
+def user_home():
+    return render_template("user_home.html")
+
+@routes.route("/user_categories")
+@login_required
+def user_categories():
+    cats=Categories.query.all()
+    return render_template("user_categories.html", cats=cats)
+
+@routes.route("/user_products", methods=["GET", "POST"])
+@login_required
+def user_products():
+    category_name = request.args.get('category')
+    products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
+    if request.method == "POST":
+        field = request.form.get("field")
+        value = request.form.get("value")
+
+        if field and value:
+            if field == "category":
+                # Handle category search differently
+                category = Categories.query.filter_by(name=value).first()
+                if category is None:
+                    flash("Category does not exist. Please add the category or enter a valid category name", "failure")
+                    return redirect(url_for("routes.user_products"))
+
+                products = category.products
+                flash("Search successful", "success")
+            else:
+                attribute = getattr(Products, field)
+                products = Products.query.options(joinedload(Products.categories)).filter(attribute==value).all()
+                flash("Search successful", "success")
+
+        else:
+            flash("please enter a value", "error")
+            products = Products.query.options(joinedload(Products.categories)).order_by(Products.category_id).all()
+        
+    if category_name:
+        category = Categories.query.filter_by(name=category_name).first()
+        if category:
+            products = category.products
+            flash(f"Showing products for category: {category_name}", "success")
+        else:
+            flash("Category does not exist. Please add the category or enter a valid category name", "failure")
+            return redirect(url_for("routes.admin_categories"))
+    
+    if not products:
+        flash("No Products found.","success")
+    products_grouped = {}
+    for product in products:
+        category_name = product.categories.name
+        if category_name not in products_grouped:
+            products_grouped[category_name] = []
+        products_grouped[category_name].append(product)
+    # Fetch all products from the database
+    # Display a template with a list of products
+    return render_template("user_products.html", products_grouped=products_grouped)
 
 @routes.route("/add_to_cart/<int:product_id>", methods=["POST"])
 def add_to_cart(product_id):

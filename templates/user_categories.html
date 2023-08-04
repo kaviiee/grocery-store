@@ -1,0 +1,22 @@
+{% extends "user_base.html" %}
+{% block div %}
+<h3>Available categories are:</h3>
+<br>
+{% for cat in cats%}
+<div class="col-md-3"> 
+    <div class="panel panel-success">
+        <div class="panel-heading">{{cat.name}}</div>
+        <div class="panel-body" style="height: 270px;">
+            {% if cat.img_url == "" %}
+                <p>No image Available</p>
+            {% else %}
+                <img src="static/{{cat.img_url}}" class="img-responsive" alt="Image">
+            {% endif %}
+        </div>
+        <div class="panel-footer">
+            <a href="{{ url_for('routes.user_products', category=cat.name) }}" class="btn btn-primary" name="Products" value="products">Products</a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
