@@ -175,7 +175,7 @@ def delete_category(category_id):
         return redirect(url_for("routes.admin_categories"))
     except:
         db.session.rollback()
-        flash("Could not delete category, please try again", "error")
+        flash("Could not delete category, as it may contain products. Delete products first and try again", "error")
         return redirect(url_for("routes.admin_categories"))
     return redirect(url_for("routes.admin_categories"))
 
@@ -433,9 +433,6 @@ def remove_cart_item(item_id):
 
 @routes.route("/checkout/<float:cart_total>", methods=["GET", "POST"])
 def checkout(cart_total):
-    if cart_total==0:
-        flash("you cannot checkout with no items in your cart", "error")
-        return redirect(url_for("routes.user_cart"))
     try:
         new_transaction = Transactions(user_id=current_user.id, amount=cart_total)
         db.session.add(new_transaction)
@@ -454,8 +451,14 @@ def checkout(cart_total):
         return redirect(url_for("routes.user_cart"))
 
 @routes.route("/admin_contactus")
-def contactus():
+@login_required
+def admin_contactus():
     return render_template("admin_contactus.html")
+
+@routes.route("/user_contactus")
+@login_required
+def user_contactus():
+    return render_template("user_contactus.html")
 
 @routes.route('/logout')
 @login_required

@@ -10,7 +10,8 @@
         {% endif %}
     {% endwith %}
     <h1>Cart Total: {{cart_total}}</h1>
-    <a href="/checkout/{{cart_total}}" class="btn btn-primary" name="checkout" value="checkout">Checkout</a>
+    Add more Products:     <a href="/user_products" class="btn btn-primary" name="products" value="products">Products</a><br><br>
+    Checkout of the cart : <a href="/checkout/{{cart_total}}" class="btn btn-primary" name="checkout" value="checkout">Checkout</a>
 <div class="row">
     <div class="col-md-12">
       <h3>Your Cart:</h3>
@@ -37,4 +38,3 @@
     </div>
   </div>
 {% endblock %}
-

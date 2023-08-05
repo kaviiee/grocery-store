@@ -44,7 +44,7 @@ class Cart_items(db.Model):
     products = db.relationship("Products", backref=db.backref("cart_items", lazy=True), primaryjoin='Cart_items.product_id == Products.id')
 
 class Transactions(db.Model):
-    id = db.Column(db.Integer, nullable=False, autoincrement=True, unique=True, primary_key=True)
+    id = db.Column(db.Integer, nullable=False, autoincrement=True, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     transaction_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     amount = db.Column(db.Float, nullable=False, default=0)
