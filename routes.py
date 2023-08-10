@@ -440,6 +440,10 @@ def checkout(cart_total):
         cart_id=Carts.query.filter_by(user_id=current_user.id).first().id
         cart_items=Cart_items.query.filter_by(cart_id=cart_id).all()
         for item in cart_items:
+            qty = item.quantity
+            prod_id = item.product_id
+            prod = Products.query.filter_by(id=prod_id).first()
+            prod.available_quantity = prod.available_quantity - qty
             db.session.delete(item)
         db.session.commit()
         flash("Transaction successful", "success")
