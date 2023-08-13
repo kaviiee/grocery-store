@@ -1,5 +1,6 @@
 TO RUN THE APP:
 First activate the virtual environment:  .\\env\Scripts\activate.bat
+Then install all requirements: pip install -r requirements.txt
 To run: python app.py
 
 When the app runs, a welcome page will be shown which will ask for login and signup
